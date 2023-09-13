@@ -6,6 +6,7 @@ const App: React.FC = () => {
   const audioChunks = useRef<BlobPart[]>([]);
 
   const startRecording = () => {
+    console.log("Tentando iniciar a gravação...");
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then(stream => {
         mediaRecorder.current = new MediaRecorder(stream);
@@ -14,6 +15,7 @@ const App: React.FC = () => {
         };
         mediaRecorder.current.onstop = async () => {
           const audioBlob = new Blob(audioChunks.current, { type: 'audio/wav' });
+          console.log("Blob criado:", audioBlob);  // Log do blob criado
           audioChunks.current = [];
           await sendAudio(audioBlob);
         };
@@ -22,10 +24,14 @@ const App: React.FC = () => {
         setTimeout(() => {
           stopRecording();
         }, 5000); // Grava por 5 segundos
+      })
+      .catch(err => {
+        console.error("Erro ao acessar o microfone:", err);
       });
   };
 
   const stopRecording = () => {
+    console.log("Tentando parar a gravação...");
     if (mediaRecorder.current) {
       mediaRecorder.current.stop();
       setRecording(false);
@@ -33,6 +39,7 @@ const App: React.FC = () => {
   };
 
   const sendAudio = async (audioBlob: Blob) => {
+    console.log("Tentando enviar áudio...");
     const formData = new FormData();
     formData.append('audio', audioBlob);
 
@@ -42,9 +49,9 @@ const App: React.FC = () => {
         body: formData,
       });
       const data = await response.json();
-      console.log(data.message);
+      console.log("Resposta do servidor:", data.message);
     } catch (error) {
-      console.error(error);
+      console.error("Erro ao enviar áudio:", error);
     }
   };
 
